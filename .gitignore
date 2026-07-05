@@ -1,0 +1,42 @@
+# ---- OS / editor ----
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# ---- Flutter / Dart (app/) ----
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+*.iml
+
+# ---- Python (backend/, face-swap-backend/) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Secrets / env (keep *.example templates) ----
+.env
+*.env
+.env.local
+
+# ---- ML model weights / large artifacts ----
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# ---- Data / datasets / large files ----
+data/god/
+
+# ---- Agentic AI / AutoGPT / BabyAGI / LangChain ----
+CLAUDE.md
+AGENTS.md

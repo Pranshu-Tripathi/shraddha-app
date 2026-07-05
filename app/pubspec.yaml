@@ -1,0 +1,28 @@
+name: shanti
+description: "Shanti — bhakti (Hindu devotional) Android app. Thin client; backend = FastAPI (see docs/BACKEND_API.md)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  dio: ^5.9.2
+  flutter:
+    sdk: flutter
+  go_router: ^17.2.3
+  image_picker: ^1.1.2
+  path_provider: ^2.1.5
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/status/
+    - assets/audio/

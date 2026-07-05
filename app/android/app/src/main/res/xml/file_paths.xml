@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- App-scoped media (auto-deleted on uninstall) shared via FileProvider. -->
+    <external-files-path name="media" path="." />
+    <files-path name="files" path="." />
+    <cache-path name="cache" path="." />
+</paths>
