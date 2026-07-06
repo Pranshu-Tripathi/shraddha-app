@@ -66,7 +66,7 @@ GoRouter createRouter(SessionController session) {
           final args = state.extra as StatusResultArgs?;
           if (args == null) return const StatusScreen();
           return StatusResultScreen(
-            templateId: args.templateId,
+            template: args.template,
             photoPath: args.photoPath,
           );
         },

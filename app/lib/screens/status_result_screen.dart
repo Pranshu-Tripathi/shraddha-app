@@ -1,35 +1,32 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 import '../api/services_scope.dart';
-import '../config/status_templates.dart';
+import '../models/face_swap.dart';
 import '../services/media_storage.dart';
 import '../services/status_share.dart';
 import '../theme/app_colors.dart';
 
 /// Args passed to the result screen via go_router `extra`.
 class StatusResultArgs {
-  const StatusResultArgs({required this.templateId, required this.photoPath});
+  const StatusResultArgs({required this.template, required this.photoPath});
 
-  final String templateId;
+  final FaceSwapTemplate template;
   final String photoPath;
 }
 
-/// Shows the merged status (template + the user's photo composited into the
-/// slot) and posts it to WhatsApp with one tap. The composite is local for now
-/// (mocking the backend merge); swap for the backend-returned image later.
+/// Confirms the selfie, runs the face-swap backend flow, and shows the merged
+/// result returned by `/v1/face-swap/merge`.
 class StatusResultScreen extends StatefulWidget {
   const StatusResultScreen({
     super.key,
-    required this.templateId,
+    required this.template,
     required this.photoPath,
   });
 
-  final String templateId;
+  final FaceSwapTemplate template;
   final String photoPath;
 
   @override
@@ -38,42 +35,41 @@ class StatusResultScreen extends StatefulWidget {
 
 class _StatusResultScreenState extends State<StatusResultScreen> {
   static const Color _accent = Color(0xFF1FA855);
-  final GlobalKey _boundaryKey = GlobalKey();
+
   bool _busy = false;
+  String? _mergedUrl;
 
-  /// Capture the on-screen composite as PNG bytes (fallback when there's no
-  /// backend yet).
-  Future<Uint8List> _localComposite() async {
-    final boundary =
-        _boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 1080 / boundary.size.width);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    return bytes!.buffer.asUint8List();
-  }
-
-  Future<void> _post() async {
-    final services = ServicesScope.of(context);
+  Future<void> _createStatus() async {
+    final service = ServicesScope.of(context).status;
     setState(() => _busy = true);
     try {
-      Uint8List merged;
-      try {
-        // Real upload: the backend merges the photo onto the template (by id)
-        // and returns the finished status image.
-        merged = await services.status.mergeStatus(
-          templateId: widget.templateId,
-          photoPath: widget.photoPath,
-          width: 1080,
-          height: 1920,
-        );
-      } catch (_) {
-        // Backend not reachable yet — fall back to the local composite.
-        merged = await _localComposite();
-      }
-      final dir = await MediaStorage.mediaDir();
-      final file = File(
-        '${dir.path}/status_${DateTime.now().millisecondsSinceEpoch}.png',
+      final upload = await service.createUploadUrl(contentType: 'image/jpeg');
+      await service.uploadSelfie(
+        signedPutUrl: upload.signedPutUrl,
+        photoPath: widget.photoPath,
+        contentType: upload.contentType,
       );
-      await file.writeAsBytes(merged);
+      final merge = await service.merge(
+        templateId: widget.template.id,
+        selfieId: upload.selfieId,
+      );
+      if (!mounted) return;
+      setState(() => _mergedUrl = merge.signedGetUrl);
+      _snack('स्टेटस तैयार हो गया 🙏');
+    } catch (e) {
+      if (mounted) _snack('त्रुटि: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _share() async {
+    final mergedUrl = _mergedUrl;
+    if (mergedUrl == null || mergedUrl.isEmpty) return;
+
+    setState(() => _busy = true);
+    try {
+      final file = await _downloadMergedImage(mergedUrl);
       final res = await StatusShare.shareToWhatsApp(file.path);
       if (!mounted) return;
       _snack(switch (res) {
@@ -88,95 +84,218 @@ class _StatusResultScreenState extends State<StatusResultScreen> {
     }
   }
 
+  Future<File> _downloadMergedImage(String imageUrl) async {
+    final uri = Uri.parse(imageUrl);
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(uri);
+      final response = await request.close();
+      if (response.statusCode >= 400) {
+        throw HttpException('Status download failed', uri: uri);
+      }
+      final bytes = await consolidateHttpClientResponseBytes(response);
+      final dir = await MediaStorage.mediaDir();
+      final file = File(
+        '${dir.path}/status_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+      await file.writeAsBytes(bytes, flush: true);
+      return file;
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   void _snack(String m) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
   Widget build(BuildContext context) {
-    final t = statusTemplateById(widget.templateId);
+    final mergedUrl = _mergedUrl;
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: AppBar(
         backgroundColor: _accent,
         foregroundColor: Colors.white,
-        title: const Text('आपका स्टेटस',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text(
+          'आपका स्टेटस',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
-      body: t == null
-          ? const Center(child: Text('टेम्पलेट नहीं मिला'))
-          : Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: RepaintBoundary(
-                          key: _boundaryKey,
-                          child: AspectRatio(
-                            aspectRatio: 9 / 16,
-                            child: LayoutBuilder(
-                              builder: (context, c) {
-                                final size = Size(c.maxWidth, c.maxHeight);
-                                final slot = t.slotIn(size);
-                                return Stack(
-                                  children: [
-                                    Positioned.fill(
-                                      child:
-                                          Image.asset(t.asset, fit: BoxFit.cover),
-                                    ),
-                                    Positioned(
-                                      left: slot.left,
-                                      top: slot.top,
-                                      width: slot.width,
-                                      height: slot.height,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            slot.width * 0.06),
-                                        child: Image.file(
-                                          File(widget.photoPath),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _accent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onPressed: _busy ? null : _post,
-                      icon: _busy
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.share),
-                      label: Text(
-                        _busy ? 'तैयार हो रहा है…' : 'व्हाट्सएप स्टेटस पर लगाएँ',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: mergedUrl == null
+                  ? _ConfirmationPreview(
+                      template: widget.template,
+                      photoPath: widget.photoPath,
+                    )
+                  : _MergedPreview(imageUrl: mergedUrl),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: _accent,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: _busy
+                    ? null
+                    : mergedUrl == null
+                    ? _createStatus
+                    : _share,
+                icon: _busy
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        mergedUrl == null ? Icons.auto_fix_high : Icons.share,
+                      ),
+                label: Text(
+                  _busy
+                      ? 'तैयार हो रहा है…'
+                      : mergedUrl == null
+                      ? 'स्टेटस बनाएँ'
+                      : 'व्हाट्सएप स्टेटस पर लगाएँ',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConfirmationPreview extends StatelessWidget {
+  const _ConfirmationPreview({required this.template, required this.photoPath});
+
+  final FaceSwapTemplate template;
+  final String photoPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: _PreviewPanel(
+                  label: 'Template',
+                  child: Image.network(
+                    template.signedGetUrl,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _PreviewPanel(
+                  label: 'Photo',
+                  child: Image.file(File(photoPath), fit: BoxFit.cover),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          template.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: AppColors.ink,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'तस्वीर सही है तो backend merge शुरू करें।',
+          style: TextStyle(color: AppColors.inkMuted),
+        ),
+      ],
+    );
+  }
+}
+
+class _MergedPreview extends StatelessWidget {
+  const _MergedPreview({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(
+          aspectRatio: 9 / 16,
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewPanel extends StatelessWidget {
+  const _PreviewPanel({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          child,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(10, 28, 10, 10),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black54],
+                ),
+              ),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

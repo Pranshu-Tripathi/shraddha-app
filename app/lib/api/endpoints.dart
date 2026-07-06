@@ -6,6 +6,9 @@ class Endpoints {
   static const String health = '/healthz';
   static const String audio = '/v1/audio';
   static const String images = '/v1/images';
+  static const String faceSwapTemplates = '/v1/face-swap/templates';
+  static const String faceSwapUploadUrl = '/v1/face-swap/upload-url';
+  static const String faceSwapMerge = '/v1/face-swap/merge';
   static const String send = '/send';
   static const String sendSummary = '/send_summary';
   static const String queue = '/queue';
