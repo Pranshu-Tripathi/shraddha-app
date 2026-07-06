@@ -1,4 +1,5 @@
 import 'api_client.dart';
+import 'services/audio_service.dart';
 import 'services/health_service.dart';
 import 'services/image_service.dart';
 import 'services/status_service.dart';
@@ -15,6 +16,7 @@ class Services {
 
   final ApiClient _client;
 
+  late final AudioService audio = AudioService(_client);
   late final HealthService health;
   late final ImageService images = ImageService(_client);
   late final WhatsappService whatsapp;

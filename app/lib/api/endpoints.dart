@@ -4,6 +4,7 @@ class Endpoints {
   const Endpoints._();
 
   static const String health = '/healthz';
+  static const String audio = '/v1/audio';
   static const String images = '/v1/images';
   static const String send = '/send';
   static const String sendSummary = '/send_summary';

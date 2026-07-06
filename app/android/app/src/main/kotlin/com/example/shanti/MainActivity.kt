@@ -38,6 +38,7 @@ class MainActivity : FlutterActivity() {
                 "setRingtone" -> setRingtone(
                     call.argument<ByteArray>("bytes"),
                     call.argument<String>("name") ?: "shanti",
+                    call.argument<String>("mimeType") ?: "audio/x-wav",
                     result,
                 )
                 else -> result.notImplemented()
@@ -73,7 +74,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun setRingtone(bytes: ByteArray?, name: String, result: MethodChannel.Result) {
+    private fun setRingtone(bytes: ByteArray?, name: String, mimeType: String, result: MethodChannel.Result) {
         if (bytes == null) { result.error("no_bytes", "bytes is required", null); return }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(applicationContext)) {
@@ -94,11 +95,12 @@ class MainActivity : FlutterActivity() {
         try {
             val resolver = applicationContext.contentResolver
             val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            val fileName = "${name}_shanti.wav"
+            val extension = extensionForMimeType(mimeType)
+            val fileName = "${name}_shanti.$extension"
             resolver.delete(collection, "${MediaStore.Audio.Media.DISPLAY_NAME}=?", arrayOf(fileName))
             val values = ContentValues().apply {
                 put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
-                put(MediaStore.Audio.Media.MIME_TYPE, "audio/x-wav")
+                put(MediaStore.Audio.Media.MIME_TYPE, mimeType)
                 put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_RINGTONES}/Shanti")
                 put(MediaStore.Audio.Media.IS_RINGTONE, true)
                 put(MediaStore.Audio.Media.IS_PENDING, 1)
@@ -115,6 +117,18 @@ class MainActivity : FlutterActivity() {
             result.success("set")
         } catch (e: Exception) {
             result.error("set_failed", e.message, null)
+        }
+    }
+
+    private fun extensionForMimeType(mimeType: String): String {
+        return when (mimeType.lowercase()) {
+            "audio/aac" -> "aac"
+            "audio/flac" -> "flac"
+            "audio/mp4", "audio/m4a", "audio/x-m4a" -> "m4a"
+            "audio/mpeg", "audio/mp3" -> "mp3"
+            "audio/ogg", "audio/opus" -> "ogg"
+            "audio/wav", "audio/x-wav", "audio/wave" -> "wav"
+            else -> "audio"
         }
     }
 
