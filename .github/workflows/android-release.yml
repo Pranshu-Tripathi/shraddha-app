@@ -1,0 +1,103 @@
+name: Android Release APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      gcs_prefix:
+        description: GCS folder/prefix for uploaded APKs
+        required: true
+        default: releases/android
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  release-apk:
+    name: Build signed release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      ANDROID_KEYSTORE_PATH: android/app/keystore/release.jks
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      GCS_RELEASE_BUCKET: ${{ vars.GCS_RELEASE_BUCKET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify release security gates
+        run: |
+          if grep -R 'signingConfigs.getByName("debug")' android/app/build.gradle.kts; then
+            echo "Release build must not use debug signing."
+            exit 1
+          fi
+          if grep -R 'android:usesCleartextTraffic="true"' android/app/src/main; then
+            echo "Release manifest must not allow global cleartext traffic."
+            exit 1
+          fi
+
+      - name: Decode release keystore
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          mkdir -p "$(dirname "$ANDROID_KEYSTORE_PATH")"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          chmod 600 "$ANDROID_KEYSTORE_PATH"
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shanti-release-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload APK to GCS
+        run: |
+          test -n "$GCS_RELEASE_BUCKET"
+          VERSION="$(grep '^version:' pubspec.yaml | awk '{print $2}')"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          REF_NAME="${GITHUB_REF_NAME:-manual}"
+          SAFE_REF="$(printf '%s' "$REF_NAME" | tr '/ ' '--')"
+          BUCKET="${GCS_RELEASE_BUCKET#gs://}"
+          BUCKET="${BUCKET%/}"
+          DEST="gs://${BUCKET}/${{ inputs.gcs_prefix }}/shanti-${VERSION}-${SAFE_REF}-${SHORT_SHA}.apk"
+          gcloud storage cp build/app/outputs/flutter-apk/app-release.apk "$DEST"
+          echo "Uploaded APK to $DEST"
