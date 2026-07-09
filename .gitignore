@@ -40,3 +40,6 @@ data/god/
 # ---- Agentic AI / AutoGPT / BabyAGI / LangChain ----
 CLAUDE.md
 AGENTS.md
+
+upload-keystore.jks
+keystore.txt
