@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../api/api_exception.dart';
 import '../state/session_controller.dart';
 import '../state/session_scope.dart';
 import '../theme/app_colors.dart';
@@ -47,7 +48,15 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     setState(() => _error = null);
-    await SessionScope.of(context).signIn(digits);
+    try {
+      await SessionScope.of(context).signIn(digits);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.message);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _error = 'लॉगिन नहीं हो पाया। कृपया फिर कोशिश करें।');
+    }
     // The go_router redirect handles navigation from here.
   }
 

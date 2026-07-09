@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
+
 import '../../models/user_session.dart';
+import '../api_exception.dart';
 import '../api_client.dart';
 import '../endpoints.dart';
 
@@ -9,11 +12,22 @@ class AuthService {
 
   /// Registers/looks up a user by phone and returns their session.
   static Future<UserSession> registerPhone(String phone) async {
-    final json = await ApiClient().postJson(
-      Endpoints.authRegister,
-      body: {'phone': phone},
-    );
-    return UserSession.fromJson(json);
+    try {
+      final json = await ApiClient().postJson(
+        Endpoints.authRegister,
+        body: {'phone': phone},
+      );
+      return UserSession.fromJson(json);
+    } on ApiException catch (e) {
+      if (!kReleaseMode && e.statusCode == 404) {
+        return UserSession(
+          phone: phone,
+          token: '',
+          subscription: SubscriptionStatus.inactive,
+        );
+      }
+      rethrow;
+    }
   }
 
   /// Re-checks the subscription status of a saved number on app launch.

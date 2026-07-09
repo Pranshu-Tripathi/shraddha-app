@@ -69,10 +69,13 @@ class SessionController extends ChangeNotifier {
 
   Future<void> signIn(String phone) async {
     _setBusy(true);
-    _session = await AuthService.registerPhone(phone);
-    _savedPhone = phone;
-    await _persist();
-    _setBusy(false);
+    try {
+      _session = await AuthService.registerPhone(phone);
+      _savedPhone = phone;
+      await _persist();
+    } finally {
+      _setBusy(false);
+    }
   }
 
   Future<void> activateSubscription() async {
