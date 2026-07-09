@@ -36,8 +36,10 @@ class SectionScreen extends StatelessWidget {
             Container(
               width: 140,
               height: 140,
-              decoration:
-                  BoxDecoration(color: section.color, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: section.color,
+                shape: BoxShape.circle,
+              ),
               alignment: Alignment.center,
               child: Text(section.emoji, style: const TextStyle(fontSize: 70)),
             ),

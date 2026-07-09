@@ -10,6 +10,7 @@ import '../api/services_scope.dart';
 import '../models/blob_audio.dart';
 import '../services/media_storage.dart';
 import '../services/ringtone_platform.dart';
+import '../services/secure_media_http.dart';
 import '../theme/app_colors.dart';
 
 /// Devotional ringtones backed by `/v1/audio`.
@@ -166,24 +167,17 @@ class _RingtoneScreenState extends State<RingtoneScreen> {
   }
 
   Future<File> _downloadToMediaStorage(BlobAudio audio) async {
-    final uri = Uri.parse(audio.signedGetUrl);
-    final client = HttpClient();
-    try {
-      final request = await client.getUrl(uri);
-      final response = await request.close();
-      if (response.statusCode >= 400) {
-        throw HttpException('Audio download failed', uri: uri);
-      }
-      final bytes = await consolidateHttpClientResponseBytes(response);
-      final dir = await MediaStorage.mediaDir();
-      final file = File(
-        '${dir.path}/ringtone-${_safeName(audio)}-${DateTime.now().millisecondsSinceEpoch}${_extensionFor(audio)}',
-      );
-      await file.writeAsBytes(bytes, flush: true);
-      return file;
-    } finally {
-      client.close(force: true);
-    }
+    final dir = await MediaStorage.mediaDir();
+    final file = File(
+      '${dir.path}/ringtone-${_safeName(audio)}-${DateTime.now().millisecondsSinceEpoch}${_extensionFor(audio)}',
+    );
+    await SecureMediaHttp.downloadToFile(
+      url: audio.signedGetUrl,
+      destination: file,
+      maxBytes: SecureMediaHttp.maxAudioBytes,
+      allowedContentTypePrefixes: const ['audio/'],
+    );
+    return file;
   }
 
   String _safeName(BlobAudio audio) {

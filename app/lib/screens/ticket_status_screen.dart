@@ -24,8 +24,8 @@ class _TicketStatusScreenState extends State<TicketStatusScreen> {
   }
 
   void _refresh() => setState(
-        () => _future = ServicesScope.of(context).whatsapp.status(widget.ticketId),
-      );
+    () => _future = ServicesScope.of(context).whatsapp.status(widget.ticketId),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -56,19 +56,19 @@ class _TicketStatusScreenState extends State<TicketStatusScreen> {
   }
 
   Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 80,
-              child: Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(child: SelectableText(value)),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
-      );
+        Expanded(child: SelectableText(value)),
+      ],
+    ),
+  );
 }

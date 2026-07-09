@@ -1,4 +1,4 @@
-package com.example.shanti
+package com.shraddha.shanti
 
 import android.app.WallpaperManager
 import android.content.ActivityNotFoundException
@@ -135,7 +135,14 @@ class MainActivity : FlutterActivity() {
     private fun shareToWhatsApp(path: String?, result: MethodChannel.Result) {
         if (path == null) { result.error("no_path", "path is required", null); return }
         try {
-            val file = File(path)
+            val file = File(path).canonicalFile
+            val externalFilesDir = getExternalFilesDir(null)
+                ?: throw IllegalStateException("external files directory unavailable")
+            val mediaRoot = File(externalFilesDir, "media").canonicalFile
+            if (!file.path.startsWith(mediaRoot.path + File.separator)) {
+                result.error("invalid_path", "file is outside the shareable media directory", null)
+                return
+            }
             val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
             // Go straight to WhatsApp (or WhatsApp Business) — never an app chooser.
             for (pkg in listOf("com.whatsapp", "com.whatsapp.w4b")) {

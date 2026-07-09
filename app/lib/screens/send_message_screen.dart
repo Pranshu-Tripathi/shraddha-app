@@ -35,8 +35,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     setState(() => _sending = true);
     try {
       final res = await ServicesScope.of(context).whatsapp.send(
-            SendRequest(text: text, groupId: _groupController.text.trim()),
-          );
+        SendRequest(text: text, groupId: _groupController.text.trim()),
+      );
       if (!mounted) return;
       _snack('Queued (ticket ${res.ticketId}, status ${res.status})');
       context.push(AppRoutes.statusPath(res.ticketId));

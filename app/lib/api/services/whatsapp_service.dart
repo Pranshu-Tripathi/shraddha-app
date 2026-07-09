@@ -19,8 +19,10 @@ class WhatsappService {
   }
 
   Future<SendResponse> sendSummary(SendSummaryRequest request) async {
-    final json =
-        await _client.postJson(Endpoints.sendSummary, body: request.toJson());
+    final json = await _client.postJson(
+      Endpoints.sendSummary,
+      body: request.toJson(),
+    );
     return SendResponse.fromJson(json);
   }
 

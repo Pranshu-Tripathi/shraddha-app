@@ -13,7 +13,9 @@ class AppColors {
   static const Color inkMuted = Color(0xFF7A6552); // secondary text
 
   // Temple landing ambiance (soft, welcoming)
-  static const Color templeTop = Color(0xFFEFD3B6); // soft warm peach-sand (top)
+  static const Color templeTop = Color(
+    0xFFEFD3B6,
+  ); // soft warm peach-sand (top)
   static const Color templeMid = Color(0xFFF8E9D7);
   static const Color glowGold = Color(0xFFF3D9B4); // soft warm halo
   static const Color deepSaffron = Color(0xFFB66239); // muted terracotta (Om)

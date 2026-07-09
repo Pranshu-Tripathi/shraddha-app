@@ -22,13 +22,13 @@ sends the number and gets a session; **all content is gated on `subscription`**.
 
 - `POST /v1/auth/register` → `{ "phone": "9876543210" }`
   → `{ "token", "phone", "subscription": "active" | "inactive", "expires_at": <iso|null> }`
-- App stores `token` (secure storage) and sends it as `Authorization: Bearer`.
+- App stores `token` in Android Keystore-backed secure storage and sends it as
+  `Authorization: Bearer` when calling protected endpoints.
 - **Gate (go_router redirect):** no session → `/login`; signed in but `inactive`
   → `/subscribe`; `active` → full app.
 - `subscription` is decided by the **backend / payment status**. Payment gateway
-  is TBD; the app currently **mocks** this in `lib/api/services/auth_service.dart`
-  (even last digit ⇒ active, for testing) and persists the session via
-  `shared_preferences`.
+  is TBD; the app must not locally activate subscriptions without verified
+  backend/payment state.
 
 ---
 

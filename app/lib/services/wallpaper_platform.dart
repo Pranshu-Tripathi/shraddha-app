@@ -1,4 +1,3 @@
-
 import 'package:flutter/services.dart';
 
 /// Thin wrapper over the native wallpaper channel (Kotlin `MainActivity`).

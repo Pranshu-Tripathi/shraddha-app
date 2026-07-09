@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../api/services_scope.dart';
 import '../models/face_swap.dart';
 import '../services/media_storage.dart';
+import '../services/secure_media_http.dart';
 import '../services/status_share.dart';
 import '../theme/app_colors.dart';
 
@@ -85,24 +85,17 @@ class _StatusResultScreenState extends State<StatusResultScreen> {
   }
 
   Future<File> _downloadMergedImage(String imageUrl) async {
-    final uri = Uri.parse(imageUrl);
-    final client = HttpClient();
-    try {
-      final request = await client.getUrl(uri);
-      final response = await request.close();
-      if (response.statusCode >= 400) {
-        throw HttpException('Status download failed', uri: uri);
-      }
-      final bytes = await consolidateHttpClientResponseBytes(response);
-      final dir = await MediaStorage.mediaDir();
-      final file = File(
-        '${dir.path}/status_${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-      await file.writeAsBytes(bytes, flush: true);
-      return file;
-    } finally {
-      client.close(force: true);
-    }
+    final dir = await MediaStorage.mediaDir();
+    final file = File(
+      '${dir.path}/status_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+    await SecureMediaHttp.downloadToFile(
+      url: imageUrl,
+      destination: file,
+      maxBytes: SecureMediaHttp.maxImageBytes,
+      allowedContentTypePrefixes: const ['image/'],
+    );
+    return file;
   }
 
   void _snack(String m) =>

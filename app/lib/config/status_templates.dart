@@ -26,11 +26,11 @@ class StatusTemplate {
 
   /// The photo slot in absolute pixels for a rendered area of [size].
   Rect slotIn(Size size) => Rect.fromLTWH(
-        slotLeft * size.width,
-        slotTop * size.height,
-        slotWidth * size.width,
-        slotHeight * size.height,
-      );
+    slotLeft * size.width,
+    slotTop * size.height,
+    slotWidth * size.width,
+    slotHeight * size.height,
+  );
 }
 
 const List<StatusTemplate> kStatusTemplates = [

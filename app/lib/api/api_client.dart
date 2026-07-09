@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../config/app_config.dart';
 import 'api_exception.dart';
@@ -12,6 +14,11 @@ import 'device_context.dart';
 /// low-level [DioException]s into a single [ApiException] type so that
 /// services and screens never import Dio directly.
 class ApiClient {
+  static const _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+  static const _sessionTokenKey = 'session_token';
+
   ApiClient({Dio? dio, this.deviceId = ''})
     : _dio =
           dio ??
@@ -28,8 +35,12 @@ class ApiClient {
     // Attach device-context headers to every request (campaign + image fit).
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
           options.headers.addAll(DeviceContext.headers(deviceId: deviceId));
+          final token = await _secureStorage.read(key: _sessionTokenKey);
+          if (token != null && token.isNotEmpty) {
+            options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
+          }
           handler.next(options);
         },
       ),
@@ -115,10 +126,9 @@ class ApiClient {
     final message = switch (e.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.receiveTimeout ||
-      DioExceptionType.sendTimeout =>
-        'Backend timed out. Is the server running at ${AppConfig.backendBaseUrl}?',
+      DioExceptionType.sendTimeout => 'Request timed out. Please try again.',
       DioExceptionType.connectionError =>
-        'Cannot reach backend at ${AppConfig.backendBaseUrl}.',
+        'Cannot reach the service. Please try again.',
       _ => serverMsg ?? e.message ?? 'Network error',
     };
     return ApiException(message, statusCode: e.response?.statusCode);

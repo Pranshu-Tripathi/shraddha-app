@@ -12,8 +12,8 @@ class TicketStatus {
   final String? error;
 
   factory TicketStatus.fromJson(Map<String, dynamic> json) => TicketStatus(
-        ticketId: json['ticket_id']?.toString() ?? '',
-        status: json['status']?.toString() ?? 'unknown',
-        error: json['error']?.toString(),
-      );
+    ticketId: json['ticket_id']?.toString() ?? '',
+    status: json['status']?.toString() ?? 'unknown',
+    error: json['error']?.toString(),
+  );
 }

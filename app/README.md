@@ -72,5 +72,5 @@ AVD `shanti_pixel`. PATH/`ANDROID_HOME`/`JAVA_HOME` exported in `~/.zshrc`.
 
 ## Before release
 
-- Change `applicationId` (`com.example.shanti`).
+- Keep the production `applicationId` stable once uploaded to Play.
 - Switch backend to HTTPS and remove `usesCleartextTraffic` (dev only).

@@ -4,6 +4,7 @@ class Endpoints {
   const Endpoints._();
 
   static const String health = '/healthz';
+  static const String authRegister = '/v1/auth/register';
   static const String audio = '/v1/audio';
   static const String images = '/v1/images';
   static const String faceSwapTemplates = '/v1/face-swap/templates';

@@ -28,7 +28,7 @@ class RudrakshaMala extends StatelessWidget {
 
 class _MalaPainter extends CustomPainter {
   _MalaPainter({required this.beads, required this.active, required this.pulse})
-      : super(repaint: pulse);
+    : super(repaint: pulse);
 
   final int beads;
   final int active;
@@ -53,8 +53,11 @@ class _MalaPainter extends CustomPainter {
       final p = Offset(c.dx + math.cos(a) * r, c.dy + math.sin(a) * r);
       if (i == active) {
         final s = 1.0 + pulse.value * 0.35;
-        canvas.drawCircle(p, 17 * s,
-            Paint()..color = const Color(0xFFE0A33B).withValues(alpha: 0.45));
+        canvas.drawCircle(
+          p,
+          17 * s,
+          Paint()..color = const Color(0xFFE0A33B).withValues(alpha: 0.45),
+        );
         canvas.drawCircle(p, 11 * s, Paint()..color = const Color(0xFF8A5A2E));
         canvas.drawCircle(
           p,

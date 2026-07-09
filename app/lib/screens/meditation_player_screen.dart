@@ -64,18 +64,26 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
       appBar: AppBar(
         backgroundColor: _accent,
         foregroundColor: Colors.white,
-        title: Text(_m.hindi, style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(
+          _m.hindi,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
       body: Column(
         children: [
           const SizedBox(height: 18),
-          Text(_m.hindi,
-              style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink)),
-          Text(_m.english,
-              style: const TextStyle(fontSize: 15, color: AppColors.inkMuted)),
+          Text(
+            _m.hindi,
+            style: const TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
+          ),
+          Text(
+            _m.english,
+            style: const TextStyle(fontSize: 15, color: AppColors.inkMuted),
+          ),
           Expanded(
             child: Center(
               child: RudrakshaMala(
@@ -85,8 +93,10 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
               ),
             ),
           ),
-          Text('मनका ${_active + 1} / ${_m.beads}    •    माला $_rounds',
-              style: const TextStyle(fontSize: 16, color: AppColors.ink)),
+          Text(
+            'मनका ${_active + 1} / ${_m.beads}    •    माला $_rounds',
+            style: const TextStyle(fontSize: 16, color: AppColors.ink),
+          ),
           const SizedBox(height: 16),
           FilledButton.icon(
             style: FilledButton.styleFrom(
@@ -95,8 +105,10 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
             ),
             onPressed: _toggle,
             icon: Icon(_playing ? Icons.pause : Icons.play_arrow),
-            label: Text(_playing ? 'रोकें' : 'शुरू करें',
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+            label: Text(
+              _playing ? 'रोकें' : 'शुरू करें',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
           ),
           const SizedBox(height: 28),
         ],

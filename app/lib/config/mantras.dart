@@ -19,10 +19,34 @@ class Mantra {
 
 const List<Mantra> kMantras = [
   Mantra(key: 'om', hindi: 'ॐ', english: 'Om', beads: 27, beadIntervalMs: 2500),
-  Mantra(key: 'shiva', hindi: 'ॐ नमः शिवाय', english: 'Om Namah Shivaya', beads: 27, beadIntervalMs: 3000),
-  Mantra(key: 'gayatri', hindi: 'गायत्री मंत्र', english: 'Gayatri Mantra', beads: 27, beadIntervalMs: 4500),
-  Mantra(key: 'mahamrityunjaya', hindi: 'महामृत्युंजय', english: 'Mahamrityunjaya', beads: 27, beadIntervalMs: 5000),
-  Mantra(key: 'krishna', hindi: 'हरे कृष्ण', english: 'Hare Krishna', beads: 27, beadIntervalMs: 2200),
+  Mantra(
+    key: 'shiva',
+    hindi: 'ॐ नमः शिवाय',
+    english: 'Om Namah Shivaya',
+    beads: 27,
+    beadIntervalMs: 3000,
+  ),
+  Mantra(
+    key: 'gayatri',
+    hindi: 'गायत्री मंत्र',
+    english: 'Gayatri Mantra',
+    beads: 27,
+    beadIntervalMs: 4500,
+  ),
+  Mantra(
+    key: 'mahamrityunjaya',
+    hindi: 'महामृत्युंजय',
+    english: 'Mahamrityunjaya',
+    beads: 27,
+    beadIntervalMs: 5000,
+  ),
+  Mantra(
+    key: 'krishna',
+    hindi: 'हरे कृष्ण',
+    english: 'Hare Krishna',
+    beads: 27,
+    beadIntervalMs: 2200,
+  ),
 ];
 
 Mantra? mantraByKey(String key) {

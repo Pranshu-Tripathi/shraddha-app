@@ -23,7 +23,10 @@ class _RashifalScreenState extends State<RashifalScreen> {
       appBar: AppBar(
         backgroundColor: _accent,
         foregroundColor: Colors.white,
-        title: const Text('राशिफल', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text(
+          'राशिफल',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(14),
@@ -49,24 +52,35 @@ class _RashifalScreenState extends State<RashifalScreen> {
                           width: 52,
                           height: 52,
                           decoration: const BoxDecoration(
-                              color: _accent, shape: BoxShape.circle),
+                            color: _accent,
+                            shape: BoxShape.circle,
+                          ),
                           alignment: Alignment.center,
-                          child:
-                              Text(r.emoji, style: const TextStyle(fontSize: 26)),
+                          child: Text(
+                            r.emoji,
+                            style: const TextStyle(fontSize: 26),
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(r.hindi,
-                                  style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.ink)),
-                              Text(r.dates,
-                                  style: const TextStyle(
-                                      fontSize: 13, color: AppColors.inkMuted)),
+                              Text(
+                                r.hindi,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                              Text(
+                                r.dates,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.inkMuted,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -114,7 +128,11 @@ class _Summary extends StatelessWidget {
           Text(
             'आज ${rashi.hindi} राशि के लिए दिन शुभ है। धैर्य और भक्ति बनाए रखें — '
             'रुका हुआ कार्य पूरा होगा।',
-            style: const TextStyle(fontSize: 15, height: 1.4, color: AppColors.ink),
+            style: const TextStyle(
+              fontSize: 15,
+              height: 1.4,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 10),
           const Row(
@@ -143,8 +161,10 @@ class _Pill extends StatelessWidget {
         color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label,
-          style: const TextStyle(fontSize: 12, color: AppColors.ink)),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 12, color: AppColors.ink),
+      ),
     );
   }
 }

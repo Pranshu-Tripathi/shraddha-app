@@ -1,25 +1,27 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../api/services/auth_service.dart';
 import '../models/user_session.dart';
 
-/// TODO(testing): REMOVE before release. When `true`, the login screen is shown
-/// on EVERY launch (the saved session is NOT auto-restored) so the registration
-/// flow can be tested repeatedly. Set to `false` for real persist-and-skip
-/// behavior (saved number → re-check subscription → render or gate).
-const bool kForceLoginOnLaunch = true;
+const bool kForceLoginOnLaunch = bool.fromEnvironment(
+  'FORCE_LOGIN_ON_LAUNCH',
+  defaultValue: false,
+);
 
-/// TODO(testing): REMOVE before release. Dummy number prefilled into the login
-/// field so a tester can continue without typing (only while
-/// [kForceLoginOnLaunch] is true).
-const String kTestingDummyPhone = '9876543210';
+const String kTestingDummyPhone = String.fromEnvironment(
+  'TESTING_DUMMY_PHONE',
+  defaultValue: '',
+);
 
 /// Holds the current [UserSession] and persists it across launches. Drives the
-/// router's redirect (login / subscription gate). Backend calls are mocked.
+/// router's redirect (login / subscription gate).
 class SessionController extends ChangeNotifier {
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
   static const _kPhone = 'session_phone';
   static const _kToken = 'session_token';
   static const _kSub = 'session_sub';
@@ -45,18 +47,21 @@ class SessionController extends ChangeNotifier {
 
   /// Restore any saved session on app start.
   Future<void> load() async {
-    final p = await SharedPreferences.getInstance();
-    _deviceId = p.getString(_kDeviceId) ?? '';
+    _deviceId = await _storage.read(key: _kDeviceId) ?? '';
     if (_deviceId.isEmpty) {
       _deviceId = _generateDeviceId();
-      await p.setString(_kDeviceId, _deviceId);
+      await _storage.write(key: _kDeviceId, value: _deviceId);
     }
-    _savedPhone = p.getString(_kPhone) ?? '';
+    _savedPhone = await _storage.read(key: _kPhone) ?? '';
     // If a number is saved, re-validate its subscription with the backend
-    // (mocked) on launch — we don't trust the stored status. Skipped while
-    // kForceLoginOnLaunch is on (testing), so the login screen always shows.
+    // on launch; stored subscription state is only a cache.
     if (_savedPhone.isNotEmpty && !kForceLoginOnLaunch) {
-      _session = await AuthService.checkSubscription(_savedPhone);
+      try {
+        _session = await AuthService.checkSubscription(_savedPhone);
+        await _persist();
+      } catch (_) {
+        await _clearSessionOnly();
+      }
     }
     _loaded = true;
     notifyListeners();
@@ -65,6 +70,7 @@ class SessionController extends ChangeNotifier {
   Future<void> signIn(String phone) async {
     _setBusy(true);
     _session = await AuthService.registerPhone(phone);
+    _savedPhone = phone;
     await _persist();
     _setBusy(false);
   }
@@ -73,14 +79,17 @@ class SessionController extends ChangeNotifier {
     final current = _session;
     if (current == null) return;
     _setBusy(true);
-    _session = await AuthService.activateSubscription(current);
-    await _persist();
-    _setBusy(false);
+    try {
+      _session = await AuthService.activateSubscription(current);
+      await _persist();
+    } finally {
+      _setBusy(false);
+    }
   }
 
   Future<void> signOut() async {
-    final p = await SharedPreferences.getInstance();
-    await Future.wait([p.remove(_kPhone), p.remove(_kToken), p.remove(_kSub)]);
+    await _clearSessionOnly();
+    _savedPhone = '';
     _session = null;
     notifyListeners();
   }
@@ -91,18 +100,28 @@ class SessionController extends ChangeNotifier {
   }
 
   String _generateDeviceId() {
-    final r = Random();
-    return List<int>.generate(16, (_) => r.nextInt(256))
-        .map((b) => b.toRadixString(16).padLeft(2, '0'))
-        .join();
+    final r = Random.secure();
+    return List<int>.generate(
+      16,
+      (_) => r.nextInt(256),
+    ).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
   Future<void> _persist() async {
     final s = _session;
     if (s == null) return;
-    final p = await SharedPreferences.getInstance();
-    await p.setString(_kPhone, s.phone);
-    await p.setString(_kToken, s.token);
-    await p.setString(_kSub, s.subscription.name);
+    await Future.wait([
+      _storage.write(key: _kPhone, value: s.phone),
+      _storage.write(key: _kToken, value: s.token),
+      _storage.write(key: _kSub, value: s.subscription.name),
+    ]);
+  }
+
+  Future<void> _clearSessionOnly() async {
+    await Future.wait([
+      _storage.delete(key: _kPhone),
+      _storage.delete(key: _kToken),
+      _storage.delete(key: _kSub),
+    ]);
   }
 }

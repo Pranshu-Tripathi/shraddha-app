@@ -18,7 +18,10 @@ class MeditationScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: _accent,
         foregroundColor: Colors.white,
-        title: const Text('ध्यान', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text(
+          'ध्यान',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(14),
@@ -33,14 +36,19 @@ class MeditationScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               onTap: () => context.push(AppRoutes.meditationPlayPath(m.key)),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 child: Row(
                   children: [
                     Container(
                       width: 48,
                       height: 48,
                       decoration: const BoxDecoration(
-                          color: _accent, shape: BoxShape.circle),
+                        color: _accent,
+                        shape: BoxShape.circle,
+                      ),
                       alignment: Alignment.center,
                       child: const Text('🧘', style: TextStyle(fontSize: 24)),
                     ),
@@ -49,18 +57,29 @@ class MeditationScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(m.hindi,
-                              style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.ink)),
-                          Text(m.english,
-                              style: const TextStyle(
-                                  fontSize: 13, color: AppColors.inkMuted)),
+                          Text(
+                            m.hindi,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          Text(
+                            m.english,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.inkMuted,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.play_circle_fill, color: _accent, size: 34),
+                    const Icon(
+                      Icons.play_circle_fill,
+                      color: _accent,
+                      size: 34,
+                    ),
                   ],
                 ),
               ),

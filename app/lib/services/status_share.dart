@@ -9,10 +9,9 @@ class StatusShare {
 
   /// Returns 'shared' (opened WhatsApp), 'not_installed', or 'error'.
   static Future<String> shareToWhatsApp(String path) async {
-    final res = await _channel.invokeMethod<String>(
-      'shareToWhatsApp',
-      {'path': path},
-    );
+    final res = await _channel.invokeMethod<String>('shareToWhatsApp', {
+      'path': path,
+    });
     return res ?? 'error';
   }
 

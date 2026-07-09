@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import '../../models/face_swap.dart';
+import '../../services/secure_media_http.dart';
 import '../api_client.dart';
 import '../api_exception.dart';
 import '../endpoints.dart';
@@ -31,24 +30,15 @@ class StatusService {
     required String photoPath,
     required String contentType,
   }) async {
-    final uri = Uri.parse(signedPutUrl);
-    final bytes = await File(photoPath).readAsBytes();
-    final client = HttpClient();
     try {
-      final request = await client.putUrl(uri);
-      request.headers.set(HttpHeaders.contentTypeHeader, contentType);
-      request.headers.set(HttpHeaders.contentLengthHeader, bytes.length);
-      request.add(bytes);
-      final response = await request.close();
-      if (response.statusCode >= 400) {
-        throw ApiException(
-          'Selfie upload failed',
-          statusCode: response.statusCode,
-        );
-      }
-      await response.drain<void>();
-    } finally {
-      client.close(force: true);
+      await SecureMediaHttp.putFile(
+        signedPutUrl: signedPutUrl,
+        filePath: photoPath,
+        contentType: contentType,
+        maxBytes: SecureMediaHttp.maxSelfieUploadBytes,
+      );
+    } on Object catch (e) {
+      throw ApiException('Selfie upload failed: $e');
     }
   }
 

@@ -26,8 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_prefilled) {
       _prefilled = true;
       final saved = SessionScope.of(context).savedPhone;
-      // TESTING: prefill the saved number, or a dummy number so a tester can
-      // continue without typing (the emulator keyboard is unreliable).
+      // A dummy number can be injected only with TESTING_DUMMY_PHONE.
       final initial = saved.isNotEmpty
           ? saved
           : (kForceLoginOnLaunch ? kTestingDummyPhone : '');
@@ -66,20 +65,28 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Text('🕉️', style: TextStyle(fontSize: 56)),
                 const SizedBox(height: 6),
-                const Text('शान्ति',
-                    style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.maroon)),
+                const Text(
+                  'शान्ति',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.maroon,
+                  ),
+                ),
                 const SizedBox(height: 30),
-                const Text('अपना मोबाइल नंबर डालें',
-                    style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink)),
+                const Text(
+                  'अपना मोबाइल नंबर डालें',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                const Text('हम आपका खाता इसी नंबर से बनाएँगे',
-                    style: TextStyle(fontSize: 13, color: AppColors.inkMuted)),
+                const Text(
+                  'हम आपका खाता इसी नंबर से बनाएँगे',
+                  style: TextStyle(fontSize: 13, color: AppColors.inkMuted),
+                ),
                 const SizedBox(height: 18),
                 TextField(
                   controller: _controller,
@@ -91,15 +98,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: const TextStyle(fontSize: 22, letterSpacing: 2),
                   decoration: InputDecoration(
                     prefixText: '+91  ',
-                    prefixStyle:
-                        const TextStyle(fontSize: 22, color: AppColors.ink),
+                    prefixStyle: const TextStyle(
+                      fontSize: 22,
+                      color: AppColors.ink,
+                    ),
                     counterText: '',
                     hintText: '00000 00000',
                     errorText: _error,
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -116,15 +126,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Text('जारी रखें',
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'जारी रखें',
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700)),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('OTP की ज़रूरत नहीं · आपका नंबर सुरक्षित है 🙏',
-                    style: TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+                const Text(
+                  'OTP की ज़रूरत नहीं · आपका नंबर सुरक्षित है 🙏',
+                  style: TextStyle(fontSize: 12, color: AppColors.inkMuted),
+                ),
               ],
             ),
           ),

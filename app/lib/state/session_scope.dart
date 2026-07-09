@@ -12,8 +12,9 @@ class SessionScope extends InheritedNotifier<SessionController> {
   }) : super(notifier: controller);
 
   static SessionController of(BuildContext context) {
-    final controller =
-        context.dependOnInheritedWidgetOfExactType<SessionScope>()?.notifier;
+    final controller = context
+        .dependOnInheritedWidgetOfExactType<SessionScope>()
+        ?.notifier;
     assert(controller != null, 'SessionScope was not found in the tree');
     return controller!;
   }

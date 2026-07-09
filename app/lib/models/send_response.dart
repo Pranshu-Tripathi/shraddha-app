@@ -12,8 +12,8 @@ class SendResponse {
   final int? position;
 
   factory SendResponse.fromJson(Map<String, dynamic> json) => SendResponse(
-        ticketId: json['ticket_id']?.toString() ?? '',
-        status: json['status']?.toString() ?? 'unknown',
-        position: (json['position'] as num?)?.toInt(),
-      );
+    ticketId: json['ticket_id']?.toString() ?? '',
+    status: json['status']?.toString() ?? 'unknown',
+    position: (json['position'] as num?)?.toInt(),
+  );
 }

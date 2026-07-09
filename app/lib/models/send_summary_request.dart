@@ -13,9 +13,9 @@ class SendSummaryRequest {
   final bool includeTimestamp;
 
   Map<String, dynamic> toJson() => {
-        'title': title,
-        'items': items,
-        'include_timestamp': includeTimestamp,
-        if (groupId != null && groupId!.isNotEmpty) 'group_id': groupId,
-      };
+    'title': title,
+    'items': items,
+    'include_timestamp': includeTimestamp,
+    if (groupId != null && groupId!.isNotEmpty) 'group_id': groupId,
+  };
 }

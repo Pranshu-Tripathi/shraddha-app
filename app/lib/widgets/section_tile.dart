@@ -43,7 +43,10 @@ class SectionTile extends StatelessWidget {
                     ],
                   ),
                   alignment: Alignment.center,
-                  child: Text(section.emoji, style: const TextStyle(fontSize: 38)),
+                  child: Text(
+                    section.emoji,
+                    style: const TextStyle(fontSize: 38),
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -71,7 +74,11 @@ class SectionTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: section.color, size: 34),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: section.color,
+                  size: 34,
+                ),
               ],
             ),
           ),

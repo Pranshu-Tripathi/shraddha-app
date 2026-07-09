@@ -17,9 +17,10 @@ class TempleHeader extends StatefulWidget {
 
 class _TempleHeaderState extends State<TempleHeader>
     with TickerProviderStateMixin {
-  late final AnimationController _slow =
-      AnimationController(vsync: this, duration: const Duration(seconds: 80))
-        ..repeat();
+  late final AnimationController _slow = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 80),
+  )..repeat();
   late final AnimationController _pulse = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 3200),
@@ -40,9 +41,7 @@ class _TempleHeaderState extends State<TempleHeader>
         alignment: Alignment.topCenter,
         children: [
           // Soft abstract watercolor (static, painted once).
-          const Positioned.fill(
-            child: CustomPaint(painter: _BlobPainter()),
-          ),
+          const Positioned.fill(child: CustomPaint(painter: _BlobPainter())),
           // Gentle drifting light motes + faint ring (animated, light).
           Positioned.fill(
             child: CustomPaint(
@@ -116,10 +115,10 @@ class _TempleHeaderState extends State<TempleHeader>
   }
 
   Widget _bell(double angle) => Transform.rotate(
-        angle: angle,
-        alignment: Alignment.topCenter,
-        child: const Text('🔔', style: TextStyle(fontSize: 24)),
-      );
+    angle: angle,
+    alignment: Alignment.topCenter,
+    child: const Text('🔔', style: TextStyle(fontSize: 24)),
+  );
 
   Widget _om() {
     return AnimatedBuilder(
@@ -143,7 +142,9 @@ class _TempleHeaderState extends State<TempleHeader>
                     gradient: RadialGradient(
                       stops: const [0.0, 0.45, 1.0],
                       colors: [
-                        AppColors.glowGold.withValues(alpha: 0.25 + 0.35 * glow),
+                        AppColors.glowGold.withValues(
+                          alpha: 0.25 + 0.35 * glow,
+                        ),
                         AppColors.glowGold.withValues(alpha: 0.22 * glow),
                         AppColors.glowGold.withValues(alpha: 0.0),
                       ],
@@ -289,9 +290,21 @@ class _ToranPainter extends CustomPainter {
   }
 
   void _marigold(Canvas canvas, double x, double y) {
-    canvas.drawCircle(Offset(x, y), 12, Paint()..color = const Color(0xFFD98A4A));
-    canvas.drawCircle(Offset(x, y), 8.5, Paint()..color = const Color(0xFFE8AE6E));
-    canvas.drawCircle(Offset(x, y), 4.5, Paint()..color = const Color(0xFFF4D6A6));
+    canvas.drawCircle(
+      Offset(x, y),
+      12,
+      Paint()..color = const Color(0xFFD98A4A),
+    );
+    canvas.drawCircle(
+      Offset(x, y),
+      8.5,
+      Paint()..color = const Color(0xFFE8AE6E),
+    );
+    canvas.drawCircle(
+      Offset(x, y),
+      4.5,
+      Paint()..color = const Color(0xFFF4D6A6),
+    );
   }
 
   void _leaf(Canvas canvas, double x, double y) {

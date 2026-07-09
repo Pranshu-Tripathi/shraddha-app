@@ -6,7 +6,7 @@ class SendRequest {
   final String? groupId;
 
   Map<String, dynamic> toJson() => {
-        'text': text,
-        if (groupId != null && groupId!.isNotEmpty) 'group_id': groupId,
-      };
+    'text': text,
+    if (groupId != null && groupId!.isNotEmpty) 'group_id': groupId,
+  };
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../services/media_storage.dart';
+import '../services/secure_media_http.dart';
 import '../services/wallpaper_platform.dart';
 
 class WallpaperViewArgs {
@@ -57,24 +58,17 @@ class _WallpaperViewScreenState extends State<WallpaperViewScreen> {
   }
 
   Future<File> _downloadToMediaStorage(String imageUrl) async {
-    final uri = Uri.parse(imageUrl);
-    final client = HttpClient();
-    try {
-      final request = await client.getUrl(uri);
-      final response = await request.close();
-      if (response.statusCode >= 400) {
-        throw HttpException('Image download failed', uri: uri);
-      }
-      final bytes = await consolidateHttpClientResponseBytes(response);
-      final dir = await MediaStorage.mediaDir();
-      final file = File(
-        '${dir.path}/wallpaper-${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-      await file.writeAsBytes(bytes, flush: true);
-      return file;
-    } finally {
-      client.close(force: true);
-    }
+    final dir = await MediaStorage.mediaDir();
+    final file = File(
+      '${dir.path}/wallpaper-${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+    await SecureMediaHttp.downloadToFile(
+      url: imageUrl,
+      destination: file,
+      maxBytes: SecureMediaHttp.maxImageBytes,
+      allowedContentTypePrefixes: const ['image/'],
+    );
+    return file;
   }
 
   void _snack(String m) =>

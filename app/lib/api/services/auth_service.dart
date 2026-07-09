@@ -1,35 +1,29 @@
 import '../../models/user_session.dart';
+import '../api_client.dart';
+import '../endpoints.dart';
 
-/// MOCKED auth/session. Replace with real calls to `POST /v1/auth/register`
-/// and a subscription-status check once the backend exists (no OTP — just the
-/// phone number). See docs/BACKEND_API.md → §0.
+/// Auth/session API. The backend decides subscription state; the app only
+/// stores and renders the returned session.
 class AuthService {
   const AuthService._();
 
   /// Registers/looks up a user by phone and returns their session.
   static Future<UserSession> registerPhone(String phone) async {
-    await Future<void>.delayed(const Duration(milliseconds: 600)); // fake network
-    // MOCK: the backend always returns an ACTIVE subscription for now.
-    return _activeSession(phone);
+    final json = await ApiClient().postJson(
+      Endpoints.authRegister,
+      body: {'phone': phone},
+    );
+    return UserSession.fromJson(json);
   }
 
   /// Re-checks the subscription status of a saved number on app launch.
   static Future<UserSession> checkSubscription(String phone) async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    // MOCK: always active for now.
-    return _activeSession(phone);
+    return registerPhone(phone);
   }
 
-  /// MOCK: pretend a payment succeeded. Real flow goes through the gateway.
   static Future<UserSession> activateSubscription(UserSession current) async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    return _activeSession(current.phone);
+    throw UnsupportedError(
+      'Subscription activation requires a verified payment backend.',
+    );
   }
-
-  static UserSession _activeSession(String phone) => UserSession(
-        phone: phone,
-        token: 'mock_${phone.hashCode.toUnsigned(32)}',
-        subscription: SubscriptionStatus.active,
-        expiresAt: DateTime.now().add(const Duration(days: 30)),
-      );
 }

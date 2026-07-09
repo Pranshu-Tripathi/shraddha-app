@@ -43,13 +43,13 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
     setState(() => _sending = true);
     try {
       final res = await ServicesScope.of(context).whatsapp.sendSummary(
-            SendSummaryRequest(
-              title: title,
-              items: items,
-              groupId: _groupController.text.trim(),
-              includeTimestamp: _includeTimestamp,
-            ),
-          );
+        SendSummaryRequest(
+          title: title,
+          items: items,
+          groupId: _groupController.text.trim(),
+          includeTimestamp: _includeTimestamp,
+        ),
+      );
       if (!mounted) return;
       _snack('Queued (ticket ${res.ticketId})');
       context.push(AppRoutes.statusPath(res.ticketId));

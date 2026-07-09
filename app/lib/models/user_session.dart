@@ -18,13 +18,13 @@ class UserSession {
   bool get isActive => subscription == SubscriptionStatus.active;
 
   factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
-        phone: json['phone']?.toString() ?? '',
-        token: json['token']?.toString() ?? '',
-        subscription: (json['subscription']?.toString() == 'active')
-            ? SubscriptionStatus.active
-            : SubscriptionStatus.inactive,
-        expiresAt: json['expires_at'] != null
-            ? DateTime.tryParse(json['expires_at'].toString())
-            : null,
-      );
+    phone: json['phone']?.toString() ?? '',
+    token: json['token']?.toString() ?? '',
+    subscription: (json['subscription']?.toString() == 'active')
+        ? SubscriptionStatus.active
+        : SubscriptionStatus.inactive,
+    expiresAt: json['expires_at'] != null
+        ? DateTime.tryParse(json['expires_at'].toString())
+        : null,
+  );
 }
